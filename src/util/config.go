@@ -1,0 +1,134 @@
+package util
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"reflect"
+	"strings"
+
+	"unicode"
+
+	"github.com/ghodss/yaml"
+	"github.com/kafkaesque-io/pulsar-beam/src/util"
+	log "github.com/sirupsen/logrus"
+)
+
+// DefaultConfigFile - default config file
+// it can be overwritten by env variable PULSAR_BEAM_CONFIG
+const DefaultConfigFile = "../config/pulsar_beam.yml"
+
+// Configuration has a set of parameters to configure the beam server.
+// The same name can be used in environment variable to override yml or json values.
+type Configuration struct {
+	// PORT is the http port
+	PORT string `json:"PORT"`
+
+	// CLUSTER is the Plusar cluster
+	CLUSTER string `json:"CLUSTER"`
+
+	// LogLevel is used to set the application log level
+	LogLevel string `json:"LogLevel"`
+
+	// DbPassword is database password
+	DbPassword string `json:"DbPassword"`
+
+	// DbConnectionStr is the database connection string
+	DbConnectionStr string `json:"DbConnectionStr"`
+
+	// PbDbType is the database type
+	PbDbType string `json:"PbDbType"`
+
+	// HTTPs certificate set up
+	CertFile string `json:"CertFile"`
+	KeyFile  string `json:"KeyFile"`
+}
+
+// Config is global configuration store
+var Config Configuration
+
+// Init initializes configuration
+func Init() {
+	configFile := util.AssignString(os.Getenv("CONFIG_FILE"), DefaultConfigFile)
+	ReadConfigFile(configFile)
+
+	log.SetLevel(logLevel(Config.LogLevel))
+
+	log.Warnf("Configuration built from file - %s", configFile)
+}
+
+// ReadConfigFile reads configuration file.
+func ReadConfigFile(configFile string) {
+	fileBytes, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		fmt.Printf("failed to load configuration file %s", configFile)
+		panic(err)
+	}
+
+	if hasJSONPrefix(fileBytes) {
+		err = json.Unmarshal(fileBytes, &Config)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		err = yaml.Unmarshal(fileBytes, &Config)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// Next section allows env variable overwrites config file value
+	fields := reflect.TypeOf(Config)
+	// pointer to struct
+	values := reflect.ValueOf(&Config)
+	// struct
+	st := values.Elem()
+	for i := 0; i < fields.NumField(); i++ {
+		field := fields.Field(i).Name
+		f := st.FieldByName(field)
+
+		if f.Kind() == reflect.String {
+			envV := os.Getenv(field)
+			if len(envV) > 0 && f.IsValid() && f.CanSet() {
+				f.SetString(strings.TrimSuffix(envV, "\n")) // ensure no \n at the end of line that was introduced by loading k8s secrete file
+			}
+			os.Setenv(field, f.String())
+		}
+	}
+
+	fmt.Printf("Configuration %v\n", Config)
+}
+
+//GetConfig returns a reference to the Configuration
+func GetConfig() *Configuration {
+	return &Config
+}
+
+func logLevel(level string) log.Level {
+	switch strings.TrimSpace(strings.ToLower(level)) {
+	case "debug":
+		return log.DebugLevel
+	case "warn":
+		return log.WarnLevel
+	case "error":
+		return log.ErrorLevel
+	case "fatal":
+		return log.FatalLevel
+	default:
+		return log.InfoLevel
+	}
+}
+
+var jsonPrefix = []byte("{")
+
+func hasJSONPrefix(buf []byte) bool {
+	return hasPrefix(buf, jsonPrefix)
+}
+
+// Return true if the first non-whitespace bytes in buf is prefix.
+func hasPrefix(buf []byte, prefix []byte) bool {
+	trim := bytes.TrimLeftFunc(buf, unicode.IsSpace)
+	return bytes.HasPrefix(trim, prefix)
+}
