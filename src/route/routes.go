@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/kafkaesque-io/pulsar-beam/src/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -34,7 +33,7 @@ var ProxyRoutes = Routes{
 		"GET",
 		"/status",
 		StatusPage,
-		middleware.NoAuth,
+		NoAuth,
 	},
 	Route{
 		"Receive",

@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	"github.com/google/gops/agent"
-	"github.com/kafkaesque-io/pulsar-beam/src/route"
+	"github.com/kafkaesque-io/prometheus-pushproxy/src/route"
 	"github.com/kafkaesque-io/pulsar-beam/src/util"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"

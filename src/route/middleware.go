@@ -20,7 +20,7 @@ var (
 // AuthFunc is a function type to allow pluggable authentication middleware
 type AuthFunc func(next http.Handler) http.Handler
 
-// AuthVerifyJWT Authenticate middleware function
+// AuthVerifyAPIKey authenticates api key
 func AuthVerifyAPIKey(next http.Handler) http.Handler {
 	switch util.GetConfig().HTTPAuthImpl {
 	case "noauth":

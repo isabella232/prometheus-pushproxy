@@ -5,7 +5,6 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/kafkaesque-io/pulsar-beam/src/middleware"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +26,7 @@ func NewRouter(mode *string) *mux.Router {
 
 	}
 	// TODO rate limit can be added per route basis
-	router.Use(middleware.LimitRate)
+	router.Use(LimitRate)
 
 	log.Infof("router added")
 	return router
