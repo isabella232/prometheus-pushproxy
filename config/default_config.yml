@@ -1,0 +1,5 @@
+---
+port: 8981
+name: test
+logLevel: debug
+defaultAPIKey: 123456

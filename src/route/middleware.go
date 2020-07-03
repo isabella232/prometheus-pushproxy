@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/kafkaesque-io/pulsar-beam/src/util"
+	"github.com/kafkaesque-io/prometheus-pushproxy/src/util"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -22,26 +22,19 @@ type AuthFunc func(next http.Handler) http.Handler
 
 // AuthVerifyAPIKey authenticates api key
 func AuthVerifyAPIKey(next http.Handler) http.Handler {
-	switch util.GetConfig().HTTPAuthImpl {
-	case "noauth":
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiKey := strings.TrimSpace(strings.Replace(r.Header.Get("Authorization"), "api-key", "", 1))
+		if apiKey == util.GetConfig().DefaultAPIKey || util.GetConfig().DefaultAPIKey == "" {
+			log.Infof("Authenticated with api-key %s", apiKey)
 			next.ServeHTTP(w, r)
-		})
-	default:
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			tokenStr := strings.TrimSpace(strings.Replace(r.Header.Get("Authorization"), "api-key", "", 1))
-			subjects, err := util.JWTAuth.GetTokenSubject(tokenStr)
+		} else {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		}
 
-			if err == nil {
-				log.Infof("Authenticated with api-key %s", subjects)
-				next.ServeHTTP(w, r)
-			} else {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			}
-
-		})
-	}
+	})
 }
+
+// TODO: implement CRUD to create and revoke api Keys with the master key
 
 // NoAuth bypasses the auth middleware
 func NoAuth(next http.Handler) http.Handler {

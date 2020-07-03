@@ -9,7 +9,7 @@
 # absolute directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-BASE_PKG_DIR="github.com/kafkaesque-io/pulsar-beam/src/"
+BASE_PKG_DIR="github.com/kafkaesque-io/prometheus-pushproxy/src/"
 ALL_PKGS=""
 
 cd $DIR/../src
@@ -21,5 +21,5 @@ go vet ./...
 
 echo run go build
 mkdir -p ${DIR}/../bin
-rm -f ${DIR}/../bin/pulsar-beam
-go build -o ${DIR}/../bin/pulsar-beam .
+rm -f ${DIR}/../bin/ppp
+go build -o ${DIR}/../bin/ppp .

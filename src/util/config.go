@@ -12,38 +12,39 @@ import (
 	"unicode"
 
 	"github.com/ghodss/yaml"
-	"github.com/kafkaesque-io/pulsar-beam/src/util"
 	log "github.com/sirupsen/logrus"
 )
 
 // DefaultConfigFile - default config file
 // it can be overwritten by env variable PULSAR_BEAM_CONFIG
-const DefaultConfigFile = "../config/pulsar_beam.yml"
+const DefaultConfigFile = "../config/default_config.yml"
 
 // Configuration has a set of parameters to configure the beam server.
 // The same name can be used in environment variable to override yml or json values.
 type Configuration struct {
 	// PORT is the http port
-	PORT string `json:"PORT"`
+	Port string `json:"port"`
 
-	// CLUSTER is the Plusar cluster
-	CLUSTER string `json:"CLUSTER"`
+	Name string `json:"name"`
 
 	// LogLevel is used to set the application log level
-	LogLevel string `json:"LogLevel"`
+	LogLevel string `json:"logLevel"`
 
 	// DbPassword is database password
-	DbPassword string `json:"DbPassword"`
+	DbPassword string `json:"dbPassword"`
 
 	// DbConnectionStr is the database connection string
-	DbConnectionStr string `json:"DbConnectionStr"`
+	DbConnectionStr string `json:"dbConnectionStr"`
 
 	// PbDbType is the database type
-	PbDbType string `json:"PbDbType"`
+	PbDbType string `json:"dbDbType"`
+
+	// DefaultAPIKey is the API key, an empty default key will disable validation
+	DefaultAPIKey string `json:"defaultAPIKey"`
 
 	// HTTPs certificate set up
-	CertFile string `json:"CertFile"`
-	KeyFile  string `json:"KeyFile"`
+	CertFile string `json:"certFile"`
+	KeyFile  string `json:"keyFile"`
 }
 
 // Config is global configuration store
@@ -51,7 +52,7 @@ var Config Configuration
 
 // Init initializes configuration
 func Init() {
-	configFile := util.AssignString(os.Getenv("CONFIG_FILE"), DefaultConfigFile)
+	configFile := AssignString(os.Getenv("CONFIG_FILE"), DefaultConfigFile)
 	ReadConfigFile(configFile)
 
 	log.SetLevel(logLevel(Config.LogLevel))
