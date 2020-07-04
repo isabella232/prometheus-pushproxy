@@ -9,7 +9,7 @@ import (
 )
 
 // NewRouter - create new router for HTTP routing
-func NewRouter(mode *string) *mux.Router {
+func NewRouter() *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range ProxyRoutes {

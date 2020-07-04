@@ -64,6 +64,7 @@ func newItem(key string, object interface{}, ttl time.Duration) *Item {
 }
 
 // Get gets an object from the cache
+// Object and boolean if object has been found
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mutex.RLock()
 	item, exists := c.items[key]

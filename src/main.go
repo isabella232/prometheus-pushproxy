@@ -12,8 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var mode = util.AssignString(os.Getenv("ProcessMode"), *flag.String("mode", "hybrid", "server running mode"))
-
 func main() {
 	// runtime.GOMAXPROCS does not the container's CPU quota in Kubernetes
 	// therefore, it requires to be set explicitly
@@ -31,10 +29,10 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:8085", "http://localhost:8080"},
 		AllowCredentials: true,
-		AllowedHeaders:   []string{"Authorization", "PulsarTopicUrl"},
+		AllowedHeaders:   []string{"Authorization"},
 	})
 
-	router := route.NewRouter(&mode)
+	router := route.NewRouter()
 
 	handler := c.Handler(router)
 	config := util.GetConfig()

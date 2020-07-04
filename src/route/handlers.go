@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -49,13 +50,26 @@ func ReceiveHandler(w http.ResponseWriter, r *http.Request) {
 
 // ProxyMetricsHandler exposes received metrics
 func ProxyMetricsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
-	data, err := getProxyMetrics()
-	if err != nil {
-		util.ResponseErrorJSON(err, w, http.StatusInternalServerError)
-		return
+	instance := mux.Vars(r)["instance"]
+	var data string
+
+	if instance != "" {
+		obj, ok := MetricsCache.Get(instance)
+		if !ok {
+			util.ResponseErrorJSON(fmt.Errorf("instance %s not found", instance), w, http.StatusNotFound)
+			return
+		}
+		data = fmt.Sprintf("%v", obj)
+	} else {
+		var err error
+		data, err = getProxyMetrics()
+		if err != nil {
+			util.ResponseErrorJSON(err, w, http.StatusInternalServerError)
+			return
+		}
 	}
 
+	w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 	w.Write([]byte(data))
 	w.WriteHeader(http.StatusOK)
 	return
@@ -64,8 +78,8 @@ func ProxyMetricsHandler(w http.ResponseWriter, r *http.Request) {
 func getProxyMetrics() (string, error) {
 	var rc string
 	for _, v := range MetricsCache.It() {
-		rc = rc + "\n" + fmt.Sprintf("%v", v.Data)
+		rc = rc + fmt.Sprintf("%v", v.Data) + "\n"
 	}
 
-	return rc, nil
+	return strings.TrimSuffix(rc, "\n"), nil
 }

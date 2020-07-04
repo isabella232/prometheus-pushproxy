@@ -16,10 +16,10 @@ import (
 )
 
 // DefaultConfigFile - default config file
-// it can be overwritten by env variable PULSAR_BEAM_CONFIG
+// it can be overwritten by env variable CONFIG_FILE
 const DefaultConfigFile = "../config/default_config.yml"
 
-// Configuration has a set of parameters to configure the beam server.
+// Configuration has a set of parameters to configure this server.
 // The same name can be used in environment variable to override yml or json values.
 type Configuration struct {
 	// PORT is the http port

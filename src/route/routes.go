@@ -22,7 +22,7 @@ type Routes []Route
 // ProxyRoutes definition
 var ProxyRoutes = Routes{
 	Route{
-		"Prometeus metrics",
+		"Application Prometeus metrics",
 		http.MethodGet,
 		"/metrics",
 		promhttp.Handler().ServeHTTP,
@@ -36,9 +36,16 @@ var ProxyRoutes = Routes{
 		AuthVerifyAPIKey,
 	},
 	Route{
-		"Receive",
+		"All proxy Prometheus metrics",
 		http.MethodGet,
 		"/proxy-metrics",
+		ProxyMetricsHandler,
+		AuthVerifyAPIKey,
+	},
+	Route{
+		"Individual instance proxy Prometheus metrics",
+		http.MethodGet,
+		"/proxy-metrics/{instance}",
 		ProxyMetricsHandler,
 		AuthVerifyAPIKey,
 	},
