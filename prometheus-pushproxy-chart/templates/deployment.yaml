@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prometheus-pushproxy.fullname" . }}
+  labels:
+    {{- include "prometheus-pushproxy.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 1 }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "prometheus-pushproxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "prometheus-pushproxy.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "prometheus-pushproxy.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port | default 80 }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: port
+              value: {{ .Values.config.port | quote }}
+            - name: name
+              value: "{{ .Values.config.name | default "dev" }}"
+            - name: defaultAPIKey
+              value: "{{ .Values.config.defaultAPIKey | default "api-key 123456" }}"
+            - name: logLevel
+              value: "{{ .Values.config.logLevel | default "info" }}"
+            {{- if .Values.enableTls }}
+            - name: certFile
+              value: {{ .Values.config.certFile | default "/etc/ssl/certs/tls.crt" }}
+            - name: keyFile
+              value: {{ .Values.config.keyFile | default "/etc/ssl/certs/tls.key" }}
+            {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
