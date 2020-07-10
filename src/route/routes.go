@@ -29,6 +29,13 @@ var ProxyRoutes = Routes{
 		AuthVerifyAPIKey,
 	},
 	Route{
+		"Application readiness and liveness probe",
+		http.MethodGet,
+		"/healthz",
+		HealthHandler,
+		NoAuth,
+	},
+	Route{
 		"Receive",
 		http.MethodPost,
 		"/v1/proxy/{instance}",

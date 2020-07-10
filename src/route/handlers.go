@@ -22,8 +22,8 @@ var MetricsCache = util.NewCache(util.CacheOption{
 func Init() {
 }
 
-// StatusPage replies with basic status code
-func StatusPage(w http.ResponseWriter, r *http.Request) {
+// HealthHandler replies with basic status code
+func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	return
 }
