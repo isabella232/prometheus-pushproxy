@@ -42,18 +42,18 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-            - name: port
+            - name: Port
               value: {{ .Values.config.port | quote }}
-            - name: name
+            - name: Name
               value: "{{ .Values.config.name | default "dev" }}"
-            - name: defaultAPIKey
+            - name: DefaultAPIKey
               value: "{{ .Values.config.defaultAPIKey | default "api-key add-your-api-key-such-as-uuid" }}"
-            - name: logLevel
+            - name: LogLevel
               value: "{{ .Values.config.logLevel | default "info" }}"
             {{- if .Values.enableTls }}
-            - name: certFile
+            - name: CertFile
               value: {{ .Values.config.certFile | default "/etc/ssl/certs/tls.crt" }}
-            - name: keyFile
+            - name: KeyFile
               value: {{ .Values.config.keyFile | default "/etc/ssl/certs/tls.key" }}
             {{- end }}
       {{- with .Values.nodeSelector }}
