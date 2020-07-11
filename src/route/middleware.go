@@ -23,7 +23,7 @@ type AuthFunc func(next http.Handler) http.Handler
 // AuthVerifyAPIKey authenticates api key
 func AuthVerifyAPIKey(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		apiKey := strings.TrimSpace(r.Header.Get("Authorization"))
+		apiKey := strings.TrimSpace(strings.Replace(r.Header.Get("Authorization"), "Bearer", "", 1))
 		if apiKey == util.GetConfig().DefaultAPIKey || util.GetConfig().DefaultAPIKey == "" {
 			next.ServeHTTP(w, r)
 		} else {
